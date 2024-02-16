@@ -1,0 +1,37 @@
+{
+    "debugMode": true,
+    "logger": {
+        "outFilename": "debug.log",
+        "fullTimestamp": true,
+        "minLevel": 6
+    },
+    "manager": {
+        "http": {
+            "address": {
+                "hostname": "localhost",
+                "port": 7700
+            },
+            "timeout": "15s"
+        },
+        "databases": [
+            {
+                "driver": "sqlite3",
+                "source": "db.sqlite3",
+                "maxOpenConnections": 5
+            }
+        ]
+    },
+    "agent": {
+        "rabbitmq": {
+            "address": {
+                "hostname": "localhost",
+                "port": 5672
+            },
+            "user": {
+                "name": "agent",
+                "password": "1337"
+            },
+            "maxGoroutines": 5
+        }
+    }
+}
