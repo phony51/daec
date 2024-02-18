@@ -1,10 +1,12 @@
 package di
 
 import (
-	"daec/internal/manager/handlers"
+	"daec/internal/manager/storage"
 	"github.com/gin-gonic/gin"
 )
 
-func ProvideService(handler handlers.ServiceRequired) gin.HandlerFunc {
-	return handler(container.service)
+type ServiceHandler func(service *storage.Service) gin.HandlerFunc
+
+func ProvideService(handler ServiceHandler) gin.HandlerFunc {
+	return handler(container.Service)
 }

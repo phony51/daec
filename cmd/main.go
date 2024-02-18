@@ -2,6 +2,7 @@ package main
 
 import (
 	"daec/internal/manager"
+	"daec/internal/manager/di"
 	"daec/internal/manager/storage"
 	"daec/loggers"
 	"daec/utils"
@@ -32,13 +33,18 @@ func main() {
 		cfg.Logger.FullTimestamp,
 		log.Level(cfg.Logger.MinLevel))
 	sqliteCfg := cfg.Manager.Databases[0]
-	err = storage.ConfigurateManagerDB(sqliteCfg.Driver,
+	err = storage.ConfigureManagerDB(sqliteCfg.Driver,
 		sqliteCfg.Source,
 		sqliteCfg.MaxOpenConnections)
-	serverManagerCfg := cfg.Manager.HTTPConfig
-	server := manager.NewServerRouter()
 	if err != nil {
 		log.Panicln(err)
 	}
-	server.Run(serverManagerCfg.Address.Hostname, serverManagerCfg.Address.Port)
+	service, err := storage.NewService()
+	if err != nil {
+		log.Panicln(err)
+	}
+	di.ConfigureContainer(service)
+	serverManagerCfg := cfg.Manager.HTTPConfig
+	server := manager.NewServerRouter()
+	log.Panicln(server.Run(serverManagerCfg.Address.Hostname, serverManagerCfg.Address.Port))
 }

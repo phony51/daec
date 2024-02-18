@@ -18,7 +18,7 @@ func NewServerRouter() ServerRouter {
 	{
 		operations := api.Group("/operations")
 		{
-			operations.GET("/", di.ProvideService(handlers.GetOperations))
+			operations.GET("/", di.ProvideService(handlers.ReadOperations))
 			operations.PUT("/", di.ProvideService(handlers.UpdateOperation))
 		}
 	}

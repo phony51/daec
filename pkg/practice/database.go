@@ -1,10 +1,27 @@
 package practice
 
-import "github.com/jmoiron/sqlx"
+import (
+	"github.com/jmoiron/sqlx"
+)
 
 type Transactor interface {
 	Commit() error
 	Rollback() error
+}
+type SchemaError struct {
+	error
+}
+
+func (s SchemaError) Error() string {
+	return s.error.Error()
+}
+
+type TxError struct {
+	error
+}
+
+func (t TxError) Error() string {
+	return t.error.Error()
 }
 
 type CRUD interface {
@@ -24,50 +41,42 @@ type RepositoryQueries struct {
 }
 
 type Repository struct {
-	tx      *sqlx.Tx
-	queries RepositoryQueries
+	Tx      *sqlx.Tx
+	Queries RepositoryQueries
 }
 
-func (r *Repository) Read(dst *any) error {
-	rows, err := r.tx.Exec(r.queries.ReadAll)
-	if err == nil {
-		err = rows.StructScan(dst)
-	}
-	return err
+func (r *Repository) Read(dst any) error {
+	row := r.Tx.QueryRowx(r.Queries.Read, dst)
+	return SchemaError{row.StructScan(dst)}
 }
 
-func (r *Repository) ReadAll(dst *any) error {
-	rows, err := r.tx.Queryx(r.queries.ReadAll)
-	if err == nil {
-		err = rows.StructScan(dst)
+func (r *Repository) ReadAll(dst any) error {
+	err := r.Tx.Select(dst, r.Queries.ReadAll)
+	if err != nil {
+		return err
 	}
-	return err
+	return nil
 }
 
 func (r *Repository) Insert(schema any) error {
-	_, err := r.tx.NamedExec(r.queries.Insert, schema)
+	_, err := r.Tx.NamedExec(r.Queries.Insert, schema)
 	return err
 }
 
 func (r *Repository) Update(schema any) error {
-	_, err := r.tx.NamedExec(r.queries.Update, schema)
+	_, err := r.Tx.NamedExec(r.Queries.Update, schema)
 	return err
 }
 
 func (r *Repository) Delete(schema any) error {
-	_, err := r.tx.NamedExec(r.queries.Delete, schema)
+	_, err := r.Tx.NamedExec(r.Queries.Delete, schema)
 	return err
 }
 
-func NewService(tx *sqlx.Tx) *Service {
-	or := &Repository{tx: tx}
-	return &Service{or}
-}
-
 func (r *Repository) Commit() error {
-	return r.tx.Commit()
+	return r.Tx.Commit()
 }
 
 func (r *Repository) Rollback() error {
-	return r.tx.Rollback()
+	return r.Tx.Rollback()
 }
