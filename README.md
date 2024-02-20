@@ -1,4 +1,5 @@
-брат умоляю 31 тг @phony51
+`go run cmd/main.go `
+тг @phony51
 
 
 
